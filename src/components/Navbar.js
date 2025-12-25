@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
-/* ===============================
-   MENU CONFIG
-   =============================== */
 const MENU_ALL = [
   { label: "Home", path: "/" },
   { label: "ISDC", path: "/isdc" },
@@ -24,9 +21,6 @@ const MENU_PRIMARY = [
   { label: "Blogs", path: "/blogs" },
 ];
 
-/* ===============================
-   SLOW SMOOTH SCROLL (ENGINE)
-   =============================== */
 const smoothScrollTo = (targetY, duration = 1000) => {
   const startY = window.scrollY;
   const diff = targetY - startY;
@@ -59,18 +53,12 @@ function Navbar() {
 
   const navigate = useNavigate();
 
-  /* ===============================
-     SCROLL BLUR
-     =============================== */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 1);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ===============================
-     BREAKPOINT SYNC
-     =============================== */
   useEffect(() => {
     const mobileMQ = window.matchMedia("(max-width: 767px)");
     const tabletMQ = window.matchMedia("(max-width: 1260px)");
@@ -94,14 +82,10 @@ function Navbar() {
   const currentMenu =
     mode === "desktop" ? MENU_ALL : MENU_PRIMARY;
 
-  /* ===============================
-     MENU CLICK HANDLER
-     =============================== */
   const handleClick = (item, index) => {
     setActiveIndex(index);
     setMenuOpen(false);
 
-    /* 🔥 HOME → smooth scroll to top */
     if (item.label === "Home") {
       const scrollToTop = () => {
         smoothScrollTo(0, 1000);
@@ -116,7 +100,6 @@ function Navbar() {
       return;
     }
 
-    /* 🔥 ABOUT → smooth scroll to section */
     if (item.label === "About") {
       const scrollToAbout = () => {
         const el = document.getElementById("about");
@@ -140,15 +123,11 @@ function Navbar() {
       return;
     }
 
-    /* NORMAL ROUTES */
     if (item.path) {
       navigate(item.path);
     }
   };
 
-  /* ===============================
-     RENDER
-     =============================== */
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       {/* LOGO */}
@@ -159,7 +138,6 @@ function Navbar() {
         UGV-<span>DTU</span>
       </div>
 
-      {/* DESKTOP + TABLET */}
       {(mode === "desktop" || mode === "tablet") && (
         <ul className="nav-links">
           <span
@@ -182,7 +160,6 @@ function Navbar() {
         </ul>
       )}
 
-      {/* MOBILE */}
       {mode === "mobile" && (
         <button
           className={`hamburger ${menuOpen ? "open" : ""}`}

@@ -61,14 +61,12 @@
   color: var(--accent);
 }
 
-/* 🔥 TABLET (<=1260px) */
 @media (max-width: 1260px) {
   .nav-logo {
     font-size: 20px;
   }
 }
 
-/* 🔥 MOBILE (<768px) */
 @media (max-width: 767px) {
   .nav-logo {
     font-size: 18px;
@@ -117,7 +115,6 @@
   color: var(--text-main);
 }
 
-/* HAMBURGER */
 .hamburger {
   justify-self: end;
   width: 24px;
