@@ -1,24 +1,31 @@
+:root {
+  --text-main: #ffffff;
+  --text-muted: #cfcfcf;
+  --accent: #8b8b8b;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+}
+
 .about {
   background: #0c0c0c;
   scroll-margin-top: 64px;
 }
 
 .about-viewport {
-  height: calc(100vh - 64px); 
+  min-height: calc(100vh - 64px);
   margin-top: 64px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: clamp(40px, 6vw, 96px);
+  padding: clamp(32px, 5vw, 96px);
 }
 
 .about-glass {
   width: 100%;
   max-width: 1240px;
 
-  padding: clamp(48px, 6vw, 88px);
+  padding: clamp(32px, 5vw, 88px);
   border-radius: 32px;
 
   background: rgba(255, 255, 255, 0.05);
@@ -60,7 +67,7 @@
 .about-cards { transition-delay: 0.35s; }
 
 .about-title {
-  font-size: 40px;
+  font-size: clamp(28px, 4.5vw, 40px);
   font-weight: 700;
   color: var(--text-main);
   margin-bottom: 20px;
@@ -68,20 +75,20 @@
 
 .about-intro {
   max-width: 820px;
-  font-size: 17px;
+  font-size: clamp(15px, 3.5vw, 17px);
   line-height: 1.75;
   color: var(--text-muted);
-  margin-bottom: 64px;
+  margin-bottom: clamp(40px, 6vw, 64px);
 }
 
 .about-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 32px;
+  gap: clamp(20px, 4vw, 32px);
 }
 
 .about-card {
-  padding: 36px;
+  padding: clamp(24px, 4vw, 36px);
   border-radius: 22px;
 
   background: rgba(255, 255, 255, 0.06);
@@ -94,15 +101,21 @@
 }
 
 .about-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-8px);
 }
 
 @media (max-width: 1023px) {
   .about-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .about-cards {
     grid-template-columns: 1fr;
   }
 
-  .about-title {
-    font-size: 32px;
+  .about-viewport {
+    margin-top: 56px;
   }
 }

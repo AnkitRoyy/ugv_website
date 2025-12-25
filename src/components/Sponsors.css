@@ -1,0 +1,233 @@
+:root {
+  --text-main: #ffffff;
+  --text-muted: #cfcfcf;
+  --accent: #8b8b8b;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+}
+
+
+.sponsors {
+  position: relative;
+  background: #0c0c0c;
+  scroll-margin-top: 64px;
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.02),
+      rgba(12,12,12,0.95) 35%,
+      rgba(12,12,12,0.95) 65%,
+      rgba(255,255,255,0.02)
+    );
+}
+
+.sponsors::after {
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: rgba(255, 255, 255, 0.04);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sponsors-glass-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 12, 12, 0.78);
+  backdrop-filter: blur(18px);
+  z-index: 0;
+}
+
+.sponsors-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding:
+    calc(64px + clamp(48px, 8vw, 80px))
+    clamp(20px, 5vw, 48px)
+    clamp(100px, 16vw, 140px);
+
+  text-align: center;
+}
+
+.sponsors-header {
+  margin-bottom: clamp(48px, 8vw, 72px);
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sponsors-heading {
+  position: relative;
+  display: inline-block;
+
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.1;
+
+  padding-bottom: 8px;
+}
+
+.sponsors-underline {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+
+  width: 0;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffffff,
+    transparent
+  );
+
+  transform: translateX(-50%);
+}
+
+.sponsors-sub {
+  margin-top: 8px;
+  font-size: clamp(14px, 3.5vw, 15px);
+  color: var(--text-muted);
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sponsors-logos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: clamp(32px, 6vw, 56px);
+  align-items: center;
+}
+
+.sponsor-logo {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 96px;
+  padding: 16px 24px;
+
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35);
+
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.sponsor-logo img {
+  height: 40px;
+  max-width: 160px;
+  object-fit: contain;
+
+  filter: grayscale(100%) brightness(0.9);
+  opacity: 0.85;
+
+  transition:
+    filter 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.sponsor-logo:hover {
+  transform: translateY(-6px) scale(1.03);
+  background: rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sponsor-logo:hover img {
+  filter: grayscale(0%) brightness(1);
+  opacity: 1;
+}
+
+.sponsors-cta {
+  margin-top: clamp(64px, 12vw, 96px);
+  padding: clamp(24px, 5vw, 32px);
+
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sponsors-cta p {
+  color: var(--text-muted);
+  font-size: clamp(14px, 3.5vw, 15px);
+  text-align: left;
+}
+
+.sponsors-cta button {
+  padding: 10px 22px;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  border: none;
+
+  cursor: pointer;
+  font-size: 14px;
+
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
+}
+
+.sponsors-cta button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .sponsors-cta {
+    flex-direction: column;
+    text-align: center;
+
+    width: 100%;           
+    max-width: clamp(240px, 80vw, 320px);     
+    
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sponsors-cta p {
+    text-align: center;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sponsors-cta button {
+    width: auto;
+    min-width: 200px;
+  }
+}

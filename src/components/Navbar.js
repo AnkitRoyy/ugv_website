@@ -6,13 +6,13 @@ const MENU_ALL = [
   { label: "Home", path: "/" },
   { label: "ISDC", path: "/isdc" },
   { label: "Blogs", path: "/blogs" },
-  { label: "About" },
-  { label: "Projects" },
-  { label: "Sponsors" },
-  { label: "Team" },
-  { label: "Visuals" },
-  { label: "Join" },
-  { label: "Contact" },
+  { label: "About", id: "about" },
+  { label: "Projects", id: "projects" },
+  { label: "Sponsors", id: "sponsors" },
+  { label: "Team", id: "team" },
+  { label: "Visuals", id: "visuals" },
+  { label: "Join", id: "join" },
+  { label: "Contact", id: "contact" },
 ];
 
 const MENU_PRIMARY = [
@@ -27,9 +27,7 @@ const smoothScrollTo = (targetY, duration = 1000) => {
   let startTime = null;
 
   const easeInOut = (t) =>
-    t < 0.5
-      ? 2 * t * t
-      : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
   const step = (timestamp) => {
     if (!startTime) startTime = timestamp;
@@ -38,7 +36,6 @@ const smoothScrollTo = (targetY, duration = 1000) => {
     const eased = easeInOut(progress);
 
     window.scrollTo(0, startY + diff * eased);
-
     if (time < duration) requestAnimationFrame(step);
   };
 
@@ -50,6 +47,7 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState("desktop");
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
 
   const navigate = useNavigate();
 
@@ -79,58 +77,90 @@ function Navbar() {
     };
   }, []);
 
-  const currentMenu =
-    mode === "desktop" ? MENU_ALL : MENU_PRIMARY;
+  const currentMenu = mode === "desktop" ? MENU_ALL : MENU_PRIMARY;
 
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const y = el.getBoundingClientRect().top + window.scrollY;
+    smoothScrollTo(y, 1000);
+  };
   const handleClick = (item, index) => {
     setActiveIndex(index);
     setMenuOpen(false);
+    setIsAutoScrolling(true);
+    setTimeout(() => setIsAutoScrolling(false), 1100);
 
     if (item.label === "Home") {
-      const scrollToTop = () => {
-        smoothScrollTo(0, 1000);
-      };
-
-      if (window.location.pathname === "/") {
-        scrollToTop();
-      } else {
+      const go = () => smoothScrollTo(0, 1000);
+      if (window.location.pathname === "/") go();
+      else {
         navigate("/");
-        setTimeout(scrollToTop, 120);
+        setTimeout(go, 120);
       }
       return;
     }
 
-    if (item.label === "About") {
-      const scrollToAbout = () => {
-        const el = document.getElementById("about");
-        if (!el) return;
-
-        const navHeight = 64;
-        const y =
-          el.getBoundingClientRect().top +
-          window.scrollY -
-          navHeight;
-
-        smoothScrollTo(y, 1000);
-      };
-
-      if (window.location.pathname === "/") {
-        scrollToAbout();
-      } else {
+    if (item.id) {
+      const go = () => scrollToSection(item.id);
+      if (window.location.pathname === "/") go();
+      else {
         navigate("/");
-        setTimeout(scrollToAbout, 120);
+        setTimeout(go, 120);
       }
       return;
     }
 
-    if (item.path) {
-      navigate(item.path);
-    }
+    if (item.path) navigate(item.path);
   };
+
+  useEffect(() => {
+    if (mode !== "desktop") return;
+
+    const observers = [];
+
+    MENU_ALL.forEach((item, index) => {
+      if (!item.id) return;
+
+      const el = document.getElementById(item.id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !isAutoScrolling) {
+            setActiveIndex(index);
+          }
+        },
+        {
+          root: null,
+          rootMargin: "-45% 0px -45% 0px", 
+          threshold: 0,
+        }
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, [mode, isAutoScrolling]);
+
+  useEffect(() => {
+    if (mode !== "desktop") return;
+
+    const onScroll = () => {
+      if (!isAutoScrolling && window.scrollY < 120) {
+        setActiveIndex(0);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [mode, isAutoScrolling]);
 
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-      {/* LOGO */}
       <div
         className="nav-logo"
         onClick={() => handleClick(currentMenu[0], 0)}
@@ -143,9 +173,7 @@ function Navbar() {
           <span
             className="pill-indicator"
             style={{
-              transform: `translateX(${
-                activeIndex * (96 + 8)
-              }px)`,
+              transform: `translateX(${activeIndex * (96 + 8)}px)`,
             }}
           />
           {currentMenu.map((item, index) => (
@@ -164,7 +192,6 @@ function Navbar() {
         <button
           className={`hamburger ${menuOpen ? "open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Menu"
         >
           <span />
           <span />

@@ -92,13 +92,17 @@
   top: 6px;
   left: 6px;
 
-  width: var(--pill-width);
+  width: 96px;
   height: calc(100% - 12px);
 
   background: rgba(255, 255, 255, 0.14);
   border-radius: 999px;
 
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+
+  transition:
+  transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+  width 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .nav-pill {
@@ -151,7 +155,6 @@
   bottom: 8px;
 }
 
-/* MOBILE MENU */
 .mobile-menu {
   position: fixed;
   top: 64px;

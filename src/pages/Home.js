@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "./Home.css";
 import About from "../components/About.js";
+import Projects from "../components/Projects.js";
+import Sponsors from "../components/Sponsors.js";
+import Team from "../components/Team.js";
+import Visuals from "../components/Visuals.js";
+import Join from "../components/Join.js";
+import Contact from "../components/Contact.js";
+import Footer from "../components/Footer.js";
 
 const sentences = [
   "Building autonomous ground vehicles.",
@@ -17,21 +24,39 @@ const images = [
   "https://images.unsplash.com/photo-1581091012184-5c7c1e52d3c4?auto=format&fit=crop&w=1200&q=80",
 ];
 
+const smoothScrollTo = (targetY, duration = 1000) => {
+  const startY = window.scrollY;
+  const diff = targetY - startY;
+  let startTime = null;
+
+  const easeInOut = (t) =>
+    t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+  const step = (timestamp) => {
+    if (!startTime) startTime = timestamp;
+    const time = timestamp - startTime;
+    const progress = Math.min(time / duration, 1);
+    const eased = easeInOut(progress);
+
+    window.scrollTo(0, startY + diff * eased);
+
+    if (time < duration) requestAnimationFrame(step);
+  };
+
+  requestAnimationFrame(step);
+};
+
 function Home() {
-  /* typing effect */
   const [text, setText] = useState("");
   const [sIndex, setSIndex] = useState(0);
   const [cIndex, setCIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
 
-  /* slideshow */
   const [activeImg, setActiveImg] = useState(0);
 
-  /* visibility state */
   const [visible, setVisible] = useState(false);
   const landingRef = useRef(null);
 
-  /* typing logic */
   useEffect(() => {
     const current = sentences[sIndex];
     let t;
@@ -56,7 +81,6 @@ function Home() {
     return () => clearTimeout(t);
   }, [cIndex, deleting, sIndex]);
 
-  /* slideshow */
   useEffect(() => {
     const id = setInterval(
       () => setActiveImg((p) => (p + 1) % images.length),
@@ -65,26 +89,28 @@ function Home() {
     return () => clearInterval(id);
   }, []);
 
-  /* intersection observer for landing */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        setVisible(entry.isIntersecting);
-      },
-      {
-        threshold: 0.4, // 40% of landing visible
-      }
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.4 }
     );
 
     if (landingRef.current) observer.observe(landingRef.current);
-
     return () => observer.disconnect();
   }, []);
 
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const y = el.getBoundingClientRect().top + window.scrollY;
+    smoothScrollTo(y, 1000);
+  };
+
   return (
     <>
-      {/* LANDING SECTION */}
       <section
+        id="home"
         ref={landingRef}
         className={`home-landing ${visible ? "show" : "hide"}`}
       >
@@ -105,8 +131,19 @@ function Home() {
           </p>
 
           <div className="landing-actions">
-            <button className="landing-btn primary">Explore Projects</button>
-            <button className="landing-btn secondary">Join the Team</button>
+            <button
+              className="landing-btn primary"
+              onClick={() => scrollToSection("projects")}
+            >
+              Explore Projects
+            </button>
+
+            <button
+              className="landing-btn secondary"
+              onClick={() => scrollToSection("join")}
+            >
+              Join the Team
+            </button>
           </div>
         </div>
 
@@ -124,7 +161,14 @@ function Home() {
         </div>
       </section>
 
-      <About/>
+      <About />
+      <Projects />
+      <Sponsors />
+      <Team />
+      <Visuals />
+      <Join />
+      <Contact />
+      <Footer />
     </>
   );
 }
