@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Home.css";
+import About from "../components/About.js";
 
 const sentences = [
   "Building autonomous ground vehicles.",
@@ -17,84 +18,114 @@ const images = [
 ];
 
 function Home() {
-  /* typewriter */
+  /* typing effect */
   const [text, setText] = useState("");
-  const [i, setI] = useState(0);
-  const [c, setC] = useState(0);
-  const [del, setDel] = useState(false);
+  const [sIndex, setSIndex] = useState(0);
+  const [cIndex, setCIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
   /* slideshow */
-  const [active, setActive] = useState(0);
+  const [activeImg, setActiveImg] = useState(0);
 
+  /* visibility state */
+  const [visible, setVisible] = useState(false);
+  const landingRef = useRef(null);
+
+  /* typing logic */
   useEffect(() => {
-    const current = sentences[i];
+    const current = sentences[sIndex];
     let t;
 
-    if (!del && c < current.length) {
+    if (!deleting && cIndex < current.length) {
       t = setTimeout(() => {
-        setText(current.slice(0, c + 1));
-        setC(c + 1);
+        setText(current.slice(0, cIndex + 1));
+        setCIndex(cIndex + 1);
       }, 55);
-    } else if (del && c > 0) {
+    } else if (deleting && cIndex > 0) {
       t = setTimeout(() => {
-        setText(current.slice(0, c - 1));
-        setC(c - 1);
+        setText(current.slice(0, cIndex - 1));
+        setCIndex(cIndex - 1);
       }, 35);
-    } else if (!del && c === current.length) {
-      t = setTimeout(() => setDel(true), 1200);
+    } else if (!deleting && cIndex === current.length) {
+      t = setTimeout(() => setDeleting(true), 1200);
     } else {
-      setDel(false);
-      setI((i + 1) % sentences.length);
+      setDeleting(false);
+      setSIndex((sIndex + 1) % sentences.length);
     }
 
     return () => clearTimeout(t);
-  }, [c, del, i]);
+  }, [cIndex, deleting, sIndex]);
 
+  /* slideshow */
   useEffect(() => {
     const id = setInterval(
-      () => setActive((p) => (p + 1) % images.length),
+      () => setActiveImg((p) => (p + 1) % images.length),
       6500
     );
     return () => clearInterval(id);
   }, []);
 
+  /* intersection observer for landing */
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.4, // 40% of landing visible
+      }
+    );
+
+    if (landingRef.current) observer.observe(landingRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="home-landing">
-      <div className="landing-left">
-        <h1 className="landing-title">
-          UGV Tech Team <span>DTU</span>
-        </h1>
+    <>
+      {/* LANDING SECTION */}
+      <section
+        ref={landingRef}
+        className={`home-landing ${visible ? "show" : "hide"}`}
+      >
+        <div className="landing-left">
+          <h1 className="landing-title">
+            UGV Tech Team <span>DTU</span>
+          </h1>
 
-        <p className="landing-type">
-          {text}
-          <span className="cursor">|</span>
-        </p>
+          <p className="landing-type">
+            {text}
+            <span className="cursor">|</span>
+          </p>
 
-        <p className="landing-desc">
-          We are a multidisciplinary student team focused on designing,
-          building, and deploying unmanned ground vehicles for real-world
-          applications.
-        </p>
+          <p className="landing-desc">
+            We are a multidisciplinary student team focused on designing,
+            building, and deploying unmanned ground vehicles for real-world
+            applications.
+          </p>
 
-        <div className="landing-actions">
-          <button className="landing-btn primary">Explore Projects</button>
-          <button className="landing-btn secondary">See the Team</button>
+          <div className="landing-actions">
+            <button className="landing-btn primary">Explore Projects</button>
+            <button className="landing-btn secondary">Join the Team</button>
+          </div>
         </div>
-      </div>
 
-      <div className="landing-right">
-        <div className="slideshow">
-          {images.map((src, idx) => (
-            <img
-              key={idx}
-              src={src}
-              alt="UGV project"
-              className={`slide ${idx === active ? "active" : ""}`}
-            />
-          ))}
+        <div className="landing-right">
+          <div className="slideshow">
+            {images.map((src, idx) => (
+              <img
+                key={idx}
+                src={src}
+                alt="UGV project"
+                className={`slide ${idx === activeImg ? "active" : ""}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <About/>
+    </>
   );
 }
 
