@@ -17,22 +17,39 @@ const MENU_ALL = [
 
 const MENU_PRIMARY = MENU_ALL.slice(0, 3);
 
-const smoothScrollTo = (targetY, duration = 900) => {
+let raf = null;
+
+const smoothScrollTo = (targetY, onDone) => {
+  cancelAnimationFrame(raf);
+
   const startY = window.scrollY;
   const diff = targetY - startY;
+  const distance = Math.abs(diff);
+
+  const duration = Math.min(
+    4200,
+    Math.max(1600, distance * 1.15)
+  );
+
   let start = null;
 
   const ease = (t) =>
-    t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    t < 0.5
+      ? 8 * t * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 4) / 2;
 
   const step = (time) => {
     if (!start) start = time;
     const p = Math.min((time - start) / duration, 1);
     window.scrollTo(0, startY + diff * ease(p));
-    if (p < 1) requestAnimationFrame(step);
+    if (p < 1) {
+      raf = requestAnimationFrame(step);
+    } else {
+      onDone?.();
+    }
   };
 
-  requestAnimationFrame(step);
+  raf = requestAnimationFrame(step);
 };
 
 export default function Navbar() {
@@ -45,7 +62,8 @@ export default function Navbar() {
   const [mode, setMode] = useState("desktop");
 
   const isHome = location.pathname === "/";
-  const clickLock = useRef(false);
+  const clickLock = useRef(false);       
+  const scrollLock = useRef(false);       
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 1);
@@ -79,9 +97,7 @@ export default function Navbar() {
           location.pathname.startsWith(m.path + "/"))
     );
 
-    if (idx !== -1) {
-      setActiveIndex(idx);
-    }
+    if (idx !== -1) setActiveIndex(idx);
   }, [location.pathname, isHome]);
 
   useEffect(() => {
@@ -89,7 +105,7 @@ export default function Navbar() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (clickLock.current) return;
+        if (scrollLock.current) return;
 
         entries.forEach((e) => {
           if (e.isIntersecting) {
@@ -113,35 +129,47 @@ export default function Navbar() {
   }, [isHome]);
 
   const handleClick = (item, index) => {
+    if (clickLock.current) return;
+
     clickLock.current = true;
+    scrollLock.current = true; 
     setActiveIndex(index);
     setMenuOpen(false);
 
+    const unlock = () => {
+      scrollLock.current = false;
+      clickLock.current = false;
+    };
+
     if (item.label === "Home") {
       navigate("/");
-      setTimeout(() => {
-        smoothScrollTo(0);
-        setTimeout(() => (clickLock.current = false), 600);
-      }, 120);
+      requestAnimationFrame(() => {
+        smoothScrollTo(0, unlock);
+      });
       return;
     }
 
     if (item.id) {
       navigate("/");
-      setTimeout(() => {
-        const el = document.getElementById(item.id);
-        if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY;
-          smoothScrollTo(y);
-        }
-        setTimeout(() => (clickLock.current = false), 600);
-      }, 220);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = document.getElementById(item.id);
+          if (el) {
+            const y =
+              el.getBoundingClientRect().top +
+              window.scrollY;
+            smoothScrollTo(y, unlock);
+          } else {
+            unlock();
+          }
+        });
+      });
       return;
     }
 
     if (item.path) {
       navigate(item.path);
-      setTimeout(() => (clickLock.current = false), 500);
+      unlock();
     }
   };
 
@@ -160,7 +188,8 @@ export default function Navbar() {
             className="pill-indicator"
             style={{
               transform: `translateX(${activeIndex * 104}px)`,
-              transition: "transform 0.6s cubic-bezier(.22,1,.36,1)",
+              transition:
+                "transform 0.6s cubic-bezier(.22,1,.36,1)",
             }}
           />
           {currentMenu.map((item, i) => (

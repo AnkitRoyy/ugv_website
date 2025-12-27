@@ -76,7 +76,7 @@ function Footer() {
         © {new Date().getFullYear()} UGV Tech Team
       </div>
 
-      <div className="footer-credit">UGV dev · ankit kumar roy</div>
+      <div className="footer-credit">UGV dev · Ankit Kumar Roy</div>
     </footer>
   );
 }
