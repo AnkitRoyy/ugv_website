@@ -13,26 +13,20 @@ const PROJECTS = [
   },
   {
     title: "Valkyrie",
-    desc: "Valkyrie is UGV-DTU's autonomous drone designed specifically for the International Space Drone Challenge 2026. This section will soon describe its architecture, sensors, autonomy stack and mission capabilities in more detail.",
+    desc: "Valkyrie is UGV-DTU's autonomous drone designed specifically for the International Space Drone Challenge 2026.",
     image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
   },
   {
     title: "CENTAUR",
-    desc: "CENTAUR, our first autonomous rover, marked UGV-DTU’s beginning — a bold step into the world of self-driving robotics and mechanical innovation.",
+    desc: "CENTAUR, our first autonomous rover, marked UGV-DTU’s beginning.",
     image: "https://images.unsplash.com/photo-1581092334514-1e7e4b62d53a",
   },
   {
     title: "AIRAWAT",
-    desc: "AIRAWAT followed, introducing advanced vision and localization, turning stability and reliability into our new engineering standards.",
+    desc: "AIRAWAT followed, introducing advanced vision and localization.",
     image: "https://images.unsplash.com/photo-1581090700227-1e37b190418e",
   },
 ];
-
-// preload images
-PROJECTS.forEach((p) => {
-  const img = new Image();
-  img.src = p.image;
-});
 
 function Projects() {
   const sectionRef = useRef(null);
@@ -121,7 +115,12 @@ function Projects() {
             </div>
 
             <div className="project-image">
-              <img src={p.image} alt={p.title} />
+              <img
+                src={p.image}
+                alt={p.title}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           </div>
         ))}
