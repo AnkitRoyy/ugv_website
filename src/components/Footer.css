@@ -9,6 +9,7 @@
   background: #0c0c0c;
   padding: 32px 24px 16px; 
   color: var(--text-muted);
+  position:relative;
 }
 
 .footer-inner {
@@ -36,7 +37,6 @@
   margin-top: 6px;
 }
 
-/* CENTER NAV */
 .footer-center {
   display: flex;
   justify-content: center;
@@ -115,4 +115,15 @@
   .footer-contact {
     align-items: center;
   }
+}
+.footer-credit {
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5); 
+  letter-spacing: 0.3px;
+
+  pointer-events: none;
 }

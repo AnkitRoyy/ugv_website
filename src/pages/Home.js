@@ -8,6 +8,8 @@ import Visuals from "../components/Visuals.js";
 import Join from "../components/Join.js";
 import Contact from "../components/Contact.js";
 import Footer from "../components/Footer.js";
+import UgvRobot from "../components/UgvRobot.js";
+
 
 const sentences = [
   "Building autonomous ground vehicles.",
@@ -37,9 +39,7 @@ const smoothScrollTo = (targetY, duration = 1000) => {
     const time = timestamp - startTime;
     const progress = Math.min(time / duration, 1);
     const eased = easeInOut(progress);
-
     window.scrollTo(0, startY + diff * eased);
-
     if (time < duration) requestAnimationFrame(step);
   };
 
@@ -53,7 +53,6 @@ function Home() {
   const [deleting, setDeleting] = useState(false);
 
   const [activeImg, setActiveImg] = useState(0);
-
   const [visible, setVisible] = useState(false);
   const landingRef = useRef(null);
 
@@ -94,7 +93,6 @@ function Home() {
       ([entry]) => setVisible(entry.isIntersecting),
       { threshold: 0.4 }
     );
-
     if (landingRef.current) observer.observe(landingRef.current);
     return () => observer.disconnect();
   }, []);
@@ -102,7 +100,6 @@ function Home() {
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
-
     const y = el.getBoundingClientRect().top + window.scrollY;
     smoothScrollTo(y, 1000);
   };
@@ -115,6 +112,9 @@ function Home() {
         className={`home-landing ${visible ? "show" : "hide"}`}
       >
         <div className="landing-left">
+
+          <UgvRobot/>
+
           <h1 className="landing-title">
             UGV Tech Team <span>DTU</span>
           </h1>
@@ -168,7 +168,6 @@ function Home() {
       <Visuals />
       <Join />
       <Contact />
-      <Footer />
     </>
   );
 }

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
 const MENU_ALL = [
-  { label: "Home", path: "/" },
+  { label: "Home", id: "home", path: "/" },
   { label: "ISDC", path: "/isdc" },
   { label: "Blogs", path: "/blogs" },
   { label: "About", id: "about" },
@@ -15,155 +15,141 @@ const MENU_ALL = [
   { label: "Contact", id: "contact" },
 ];
 
-const MENU_PRIMARY = [
-  { label: "Home", path: "/" },
-  { label: "ISDC", path: "/isdc" },
-  { label: "Blogs", path: "/blogs" },
-];
+const MENU_PRIMARY = MENU_ALL.slice(0, 3);
 
-const smoothScrollTo = (targetY, duration = 1000) => {
+const smoothScrollTo = (targetY, duration = 900) => {
   const startY = window.scrollY;
   const diff = targetY - startY;
-  let startTime = null;
+  let start = null;
 
-  const easeInOut = (t) =>
+  const ease = (t) =>
     t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-  const step = (timestamp) => {
-    if (!startTime) startTime = timestamp;
-    const time = timestamp - startTime;
-    const progress = Math.min(time / duration, 1);
-    const eased = easeInOut(progress);
-
-    window.scrollTo(0, startY + diff * eased);
-    if (time < duration) requestAnimationFrame(step);
+  const step = (time) => {
+    if (!start) start = time;
+    const p = Math.min((time - start) / duration, 1);
+    window.scrollTo(0, startY + diff * ease(p));
+    if (p < 1) requestAnimationFrame(step);
   };
 
   requestAnimationFrame(step);
 };
 
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [mode, setMode] = useState("desktop");
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-
+export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mode, setMode] = useState("desktop");
+
+  const isHome = location.pathname === "/";
+  const clickLock = useRef(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 1);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 1);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   useEffect(() => {
-    const mobileMQ = window.matchMedia("(max-width: 767px)");
-    const tabletMQ = window.matchMedia("(max-width: 1260px)");
-
-    const updateMode = () => {
-      if (mobileMQ.matches) setMode("mobile");
-      else if (tabletMQ.matches) setMode("tablet");
-      else setMode("desktop");
-    };
-
-    updateMode();
-    mobileMQ.addEventListener("change", updateMode);
-    tabletMQ.addEventListener("change", updateMode);
-
+    const m = window.matchMedia("(max-width: 767px)");
+    const t = window.matchMedia("(max-width: 1260px)");
+    const u = () =>
+      setMode(m.matches ? "mobile" : t.matches ? "tablet" : "desktop");
+    u();
+    m.addEventListener("change", u);
+    t.addEventListener("change", u);
     return () => {
-      mobileMQ.removeEventListener("change", updateMode);
-      tabletMQ.removeEventListener("change", updateMode);
+      m.removeEventListener("change", u);
+      t.removeEventListener("change", u);
     };
   }, []);
 
   const currentMenu = mode === "desktop" ? MENU_ALL : MENU_PRIMARY;
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
+  useEffect(() => {
+    if (isHome) return;
 
-    const y = el.getBoundingClientRect().top + window.scrollY;
-    smoothScrollTo(y, 1000);
-  };
+    const idx = MENU_ALL.findIndex(
+      (m) =>
+        m.path &&
+        (location.pathname === m.path ||
+          location.pathname.startsWith(m.path + "/"))
+    );
+
+    if (idx !== -1) {
+      setActiveIndex(idx);
+    }
+  }, [location.pathname, isHome]);
+
+  useEffect(() => {
+    if (!isHome) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (clickLock.current) return;
+
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const idx = MENU_ALL.findIndex(
+              (m) => m.id === e.target.id
+            );
+            if (idx !== -1) setActiveIndex(idx);
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -45% 0px" }
+    );
+
+    MENU_ALL.forEach((m) => {
+      if (!m.id) return;
+      const el = document.getElementById(m.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [isHome]);
+
   const handleClick = (item, index) => {
+    clickLock.current = true;
     setActiveIndex(index);
     setMenuOpen(false);
-    setIsAutoScrolling(true);
-    setTimeout(() => setIsAutoScrolling(false), 1100);
 
     if (item.label === "Home") {
-      const go = () => smoothScrollTo(0, 1000);
-      if (window.location.pathname === "/") go();
-      else {
-        navigate("/");
-        setTimeout(go, 120);
-      }
+      navigate("/");
+      setTimeout(() => {
+        smoothScrollTo(0);
+        setTimeout(() => (clickLock.current = false), 600);
+      }, 120);
       return;
     }
 
     if (item.id) {
-      const go = () => scrollToSection(item.id);
-      if (window.location.pathname === "/") go();
-      else {
-        navigate("/");
-        setTimeout(go, 120);
-      }
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById(item.id);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY;
+          smoothScrollTo(y);
+        }
+        setTimeout(() => (clickLock.current = false), 600);
+      }, 220);
       return;
     }
 
-    if (item.path) navigate(item.path);
+    if (item.path) {
+      navigate(item.path);
+      setTimeout(() => (clickLock.current = false), 500);
+    }
   };
-
-  useEffect(() => {
-    if (mode !== "desktop") return;
-
-    const observers = [];
-
-    MENU_ALL.forEach((item, index) => {
-      if (!item.id) return;
-
-      const el = document.getElementById(item.id);
-      if (!el) return;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && !isAutoScrolling) {
-            setActiveIndex(index);
-          }
-        },
-        {
-          root: null,
-          rootMargin: "-45% 0px -45% 0px", 
-          threshold: 0,
-        }
-      );
-
-      observer.observe(el);
-      observers.push(observer);
-    });
-
-    return () => observers.forEach((o) => o.disconnect());
-  }, [mode, isAutoScrolling]);
-
-  useEffect(() => {
-    if (mode !== "desktop") return;
-
-    const onScroll = () => {
-      if (!isAutoScrolling && window.scrollY < 120) {
-        setActiveIndex(0);
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [mode, isAutoScrolling]);
 
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div
         className="nav-logo"
-        onClick={() => handleClick(currentMenu[0], 0)}
+        onClick={() => handleClick(MENU_ALL[0], 0)}
       >
         UGV-<span>DTU</span>
       </div>
@@ -173,14 +159,15 @@ function Navbar() {
           <span
             className="pill-indicator"
             style={{
-              transform: `translateX(${activeIndex * (96 + 8)}px)`,
+              transform: `translateX(${activeIndex * 104}px)`,
+              transition: "transform 0.6s cubic-bezier(.22,1,.36,1)",
             }}
           />
-          {currentMenu.map((item, index) => (
+          {currentMenu.map((item, i) => (
             <li
               key={item.label}
               className="nav-pill"
-              onClick={() => handleClick(item, index)}
+              onClick={() => handleClick(item, i)}
             >
               {item.label}
             </li>
@@ -191,7 +178,7 @@ function Navbar() {
       {mode === "mobile" && (
         <button
           className={`hamburger ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => setMenuOpen((p) => !p)}
         >
           <span />
           <span />
@@ -201,11 +188,11 @@ function Navbar() {
 
       {mode === "mobile" && menuOpen && (
         <div className="mobile-menu">
-          {MENU_PRIMARY.map((item, index) => (
+          {MENU_PRIMARY.map((item, i) => (
             <div
               key={item.label}
               className="mobile-item"
-              onClick={() => handleClick(item, index)}
+              onClick={() => handleClick(item, i)}
             >
               {item.label}
             </div>
@@ -215,5 +202,3 @@ function Navbar() {
     </nav>
   );
 }
-
-export default Navbar;

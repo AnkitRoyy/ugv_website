@@ -75,6 +75,8 @@ function Footer() {
         <br />
         © {new Date().getFullYear()} UGV Tech Team
       </div>
+
+      <div className="footer-credit">UGV dev · ankit kumar roy</div>
     </footer>
   );
 }
